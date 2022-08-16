@@ -7,6 +7,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.ApplicationContext;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -26,14 +27,14 @@ public class SpringBeanPostProcessor implements BeanPostProcessor {
 
     private final RegisterService registerService;
 
-    private final NettyRpcClient client;
+    private final NettyRpcClient nettyRpcClient;
 
     @SneakyThrows
     @Override
     public Object postProcessBeforeInitialization(Object bean, @NonNull String beanName) throws BeansException {
         if (bean.getClass().isAnnotationPresent(RpcService.class)) {
             String host = InetAddress.getLocalHost().getHostAddress();
-            registerService.register(beanName, new InetSocketAddress(host, 8080));
+            registerService.register(bean, new InetSocketAddress(host, 8080));
         }
         return bean;
     }
@@ -48,7 +49,7 @@ public class SpringBeanPostProcessor implements BeanPostProcessor {
             RpcReference rpcReference = declaredField.getAnnotation(RpcReference.class);
             if (rpcReference != null) {
 
-                RpcClientProxy rpcClientProxy = new RpcClientProxy(client);
+                RpcClientProxy rpcClientProxy = new RpcClientProxy(nettyRpcClient);
                 Object clientProxy = rpcClientProxy.getProxy(declaredField.getType());
                 declaredField.setAccessible(true);
                 try {

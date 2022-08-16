@@ -12,5 +12,7 @@ public interface RegisterService {
 
     InetSocketAddress findService(Invocation invocation);
 
-    void register(String ServiceName, InetSocketAddress inetSocketAddress);
+    void register(Object service, InetSocketAddress inetSocketAddress);
+
+    Object getServiceImpl(String interfaceName);
 }
